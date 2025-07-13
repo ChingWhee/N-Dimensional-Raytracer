@@ -4,21 +4,16 @@ from visualization import visualize_raytracer
 
 # Test parameters: [dimensions, start_coords, end_coords, min_grid_size]
 test_parameters = [
-    # Basic 2D test with negative coordinates
-    [2, [0.0, 0.0], [3.0, 3.0], 5],
+    [2, [0.5, 0.0], [3.5, 3.5], 5],
+    [2, [-3.0, -3.0], [3.0, 3.0], 5],
+    [2, [0.3, 0.0], [0.2, 3.1], 5],
+    [2, [0.0, 0.0], [0.0, 0.0], 5],
     
     # 3D raytracer test
-    [3, [0.0, 0.0, 0.0], [5.0, 5.0, 5.0], 10],
-    
-    # Edge cases
-    [2, [1.0, 2.5], [6.0, 2.5], 10],  # Horizontal ray
-    [2, [3.5, 1.0], [3.5, 5.0], 10],  # Vertical ray
-    [2, [0.0, 0.0], [4.0, 4.0], 10],  # Diagonal ray
-    
-    # Additional test cases
-    [2, [1.2, 1.8], [5.5, 4.2], 6],   # For visualization
-    [4, [0.5, 1.5, 2.5, 0.0], [3.5, 4.5, 1.5, 3.0], 15],  # 4D test
-    [2, [-1.0, -1.0], [1.0, 1.0], 8], # Centered around origin
+    [3, [0.1, 0.0, 0.0], [5.2, 5.0, 5.3], 10],
+    [3, [0.0, 0.0, 0.0], [0.0, 5.0, 5.0], 10],
+    [3, [0.0, 0.0, 0.0], [0.0, 0.0, 5.0], 10],
+    [3, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 10],
 ]
 
 def main():
