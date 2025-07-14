@@ -25,23 +25,14 @@ class Raytracer:
         self.t = 0.0                                                # t (current parametric position along ray)
         self.F = []                                                 # F (front cell relative coordinates matrix)
         
-        # Grid for visualization
-        self.grid = None
-        
         # Initialize the raytracer
         self._initialize()
     
     def _initialize(self):
-        """Initialize all raytracing variables and grid."""
-        # Validate input coordinates and get expanded grid size if needed
-        actual_grid_size = self._validate_and_expand_grid()
-        if actual_grid_size is None:
-            self.grid = None
+        """Initialize all raytracing variables."""
+        # Validate input coordinates
+        if not self._validate_coordinates():
             return
-        
-        # Initialize the grid for visualization
-        shape = (actual_grid_size,) * self.dimensions
-        self.grid = np.zeros(shape)
         
         # Calculate initial D and y values
         for i in range(self.dimensions):
@@ -165,21 +156,9 @@ class Raytracer:
         
         return list(intersected_cells)
     
-    def _validate_and_expand_grid(self):
+    def _validate_coordinates(self):
+        """Validate input coordinates."""
         # Check dimensions
         if len(self.start_coords) != self.dimensions or len(self.end_coords) != self.dimensions:
-            return None
-        
-        # Calculate the coordinate range in each dimension
-        ranges_per_dim = []
-        for i in range(self.dimensions):
-            dim_min = min(self.start_coords[i], self.end_coords[i])
-            dim_max = max(self.start_coords[i], self.end_coords[i])
-            ranges_per_dim.append(dim_max - dim_min)
-        
-        # Use the largest dimensional range to determine grid size
-        max_range = max(ranges_per_dim)
-        required_grid_size = int(np.ceil(max_range)) + 2  # +2 for padding/border
-        
-        # Return the larger of minimum grid size or required size
-        return max(self.min_grid_size, required_grid_size)
+            return False
+        return True

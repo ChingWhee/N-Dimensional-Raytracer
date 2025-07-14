@@ -1,4 +1,4 @@
-from raytracing_viz import test_raytracing_viz
+from visualization.raytracing_viz import test_raytracing_viz
 
 def main():
     test_raytracing_viz() # Test raytracing visualization

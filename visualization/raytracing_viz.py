@@ -24,10 +24,6 @@ def visualize_raytracer(raytracer, title="Raytracer Visualization"):
 
 def _visualize_2d(raytracer, intersected_cells, title):
     """Visualize 2D raytracer."""
-    if raytracer.grid is None:
-        print("Raytracer initialization failed")
-        return intersected_cells
-    
     # Create figure and axis
     fig, ax = plt.subplots(1, 1, figsize=(12, 10))
     
@@ -110,10 +106,6 @@ def _visualize_2d(raytracer, intersected_cells, title):
 
 def _visualize_3d(raytracer, intersected_cells, title):
     """Visualize 3D raytracer with multiple orthogonal views."""
-    if raytracer.grid is None:
-        print("Raytracer initialization failed")
-        return intersected_cells
-    
     if not intersected_cells:
         print("No intersected cells found")
         return intersected_cells
@@ -293,3 +285,38 @@ def _draw_cube(ax, x, y, z, color='blue', alpha=0.3):
     # Create 3D polygon collection
     poly3d = Poly3DCollection(faces, alpha=alpha, facecolor=color, edgecolor='black', linewidth=0.8)
     ax.add_collection3d(poly3d)
+
+# Test parameters: [dimensions, start_coords, end_coords, min_grid_size]
+TEST_PARAMETERS = [
+    [2, [0.5, 0.0], [3.5, 3.5], 5],
+    [2, [-3.0, -3.0], [3.0, 3.0], 5],
+    [2, [0.3, 0.0], [0.2, 3.1], 5],
+    [2, [0.0, 0.0], [0.0, 0.0], 5],
+    
+    # 3D raytracer test
+    [3, [0.1, 0.0, 0.0], [5.2, 5.0, 5.3], 10],
+    [3, [0.0, 0.0, 0.0], [0.0, 5.0, 5.0], 10],
+    [3, [0.0, 0.0, 0.0], [0.0, 0.0, 5.0], 10],
+    [3, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 10],
+]
+
+def test_raytracing_viz():
+    """Execute all test cases and display visualizations."""
+    for i, params in enumerate(TEST_PARAMETERS):
+        dimensions, start_coords, end_coords, min_grid_size = params
+        print(f"\n=== Test Case {i+1}: {dimensions}D Ray ===")
+        print(f"Start: {start_coords}, End: {end_coords}")
+        
+        raytracer = Raytracer(dimensions, start_coords, end_coords, min_grid_size)
+        
+        print(f"✅ Success! Ray length: {raytracer.ray_length:.3f}")
+        
+        # Use the unified visualization function
+        intersected_cells = visualize_raytracer(raytracer, f"Test Case {i+1}: {dimensions}D Ray")
+        print(f"📊 Intersected {len(intersected_cells)} cells")
+    
+    print("\n" + "=" * 50)
+    print("🎯 All tests completed!")
+
+if __name__ == "__main__":
+    test_raytracing_viz()
