@@ -3,12 +3,13 @@ import numpy as np
 THRESHOLD = 1e-8  # Threshold for floating point comparison
 
 class Raytracer:
-    def __init__(self, dimensions, start_coords, end_coords, min_grid_size=10):
+    def __init__(self, dimensions, start_coords, end_coords):
         # Input parameters
         self.dimensions = dimensions
+        
+        # Convert coordinates to float arrays (handles both integer and float inputs)
         self.start_coords = np.array(start_coords, dtype=float)
         self.end_coords = np.array(end_coords, dtype=float)
-        self.min_grid_size = min_grid_size
         
         # Ray parameters
         self.x0 = self.start_coords.copy()  # start coordinates

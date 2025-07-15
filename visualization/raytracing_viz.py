@@ -1,9 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from raytracer import Raytracer
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.raytracer import Raytracer
 
 def visualize_raytracer(raytracer, title="Raytracer Visualization"):
     """
@@ -286,28 +289,28 @@ def _draw_cube(ax, x, y, z, color='blue', alpha=0.3):
     poly3d = Poly3DCollection(faces, alpha=alpha, facecolor=color, edgecolor='black', linewidth=0.8)
     ax.add_collection3d(poly3d)
 
-# Test parameters: [dimensions, start_coords, end_coords, min_grid_size]
+# Test parameters: [dimensions, start_coords, end_coords]
 TEST_PARAMETERS = [
-    [2, [0.5, 0.0], [3.5, 3.5], 5],
-    [2, [-3.0, -3.0], [3.0, 3.0], 5],
-    [2, [0.3, 0.0], [0.2, 3.1], 5],
-    [2, [0.0, 0.0], [0.0, 0.0], 5],
+    [2, [0.5, 0.0], [3.5, 3.5]],
+    [2, [-3.0, -3.0], [3.0, 3.0]],
+    [2, [0.3, 0.0], [0.2, 3.1]],
+    [2, [0.0, 0.0], [0.0, 0.0]],
     
     # 3D raytracer test
-    [3, [0.1, 0.0, 0.0], [5.2, 5.0, 5.3], 10],
-    [3, [0.0, 0.0, 0.0], [0.0, 5.0, 5.0], 10],
-    [3, [0.0, 0.0, 0.0], [0.0, 0.0, 5.0], 10],
-    [3, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 10],
+    [3, [0.1, 0.0, 0.0], [5.2, 5.0, 5.3]],
+    [3, [0.0, 0.0, 0.0], [0.0, 5.0, 5.0]],
+    [3, [0.0, 0.0, 0.0], [0.0, 0.0, 5.0]],
+    [3, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
 ]
 
 def test_raytracing_viz():
     """Execute all test cases and display visualizations."""
     for i, params in enumerate(TEST_PARAMETERS):
-        dimensions, start_coords, end_coords, min_grid_size = params
+        dimensions, start_coords, end_coords = params
         print(f"\n=== Test Case {i+1}: {dimensions}D Ray ===")
         print(f"Start: {start_coords}, End: {end_coords}")
         
-        raytracer = Raytracer(dimensions, start_coords, end_coords, min_grid_size)
+        raytracer = Raytracer(dimensions, start_coords, end_coords)
         
         print(f"✅ Success! Ray length: {raytracer.ray_length:.3f}")
         
