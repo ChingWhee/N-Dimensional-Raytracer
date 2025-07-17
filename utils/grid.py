@@ -62,8 +62,13 @@ class Grid:
             if idx < 0 or idx >= self.occupancy_grid.shape[i]:
                 return True  # Consider out-of-bounds as occupied
         
+        # Use direct indexing for top-left origin coordinate system
+        # For all dimensions: coordinates (x, y, z, ...) map to array indices [..., z, y, x]
+        # This maintains the visual expectation where the last coordinate corresponds to the first array dimension
+        array_indices = tuple(grid_indices[::-1])  # Simply reverse coordinate order
+        
         # Check occupancy
-        return bool(self.occupancy_grid[tuple(grid_indices)])
+        return bool(self.occupancy_grid[array_indices])
     
     def world_to_grid(self, world_coords):
         return np.array(world_coords) - self.origin

@@ -2,7 +2,6 @@ import numpy as np
 import sys
 import os
 
-# Add the parent directory to the path to import utils
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.grid import Grid
 from utils.nodes import Nodes
@@ -31,27 +30,18 @@ class PathPlanner:
     - 'vertex': Planning from vertex coordinates (integer coordinates)
     """
     def __init__(self, start_coords, end_coords, occupancy_grid, origin=None, loose=1, algorithm='bfs', mode='cell'):
-        # Validate and convert coordinates to integers
+        # Store coordinates as grid indices (integers)
         self.start_coords = np.array(start_coords, dtype=int)
         self.end_coords = np.array(end_coords, dtype=int)
         self.algorithm = algorithm.lower()
         self.mode = mode.lower()
         
-        # Calculate actual raytracing coordinates based on mode
-        if self.mode == 'cell':
-            # Cell mode: start from cell centers (add 0.5 offset)
-            self.raytracing_start = self.start_coords + 0.5
-            self.raytracing_end = self.end_coords + 0.5
-        elif self.mode == 'vertex':
-            # Vertex mode: start from integer coordinates
-            self.raytracing_start = self.start_coords.astype(float)
-            self.raytracing_end = self.end_coords.astype(float)
-        else:
+        if self.mode not in ['cell', 'vertex']:
             raise ValueError(f"Mode '{self.mode}' not supported. Use 'cell' or 'vertex'")
         
         self.grid = Grid(occupancy_grid, loose=loose, origin=origin)
         
-        # Then initialize nodes based on mode
+        # Initialize nodes based on mode
         if self.mode == 'cell':
             self.nodes = Nodes(self.grid.num_cells)
         elif self.mode == 'vertex':
@@ -111,6 +101,12 @@ class PathPlanner:
             print(f"Error: Start coordinates {self.start_coords} are out of {bounds_name} bounds {[f'[0, {b-1}]' for b in bounds]}")
             return False
         
+        if not self.grid.is_within_bounds_for_mode(self.end_coords, self.mode):
+            bounds_name = "cell" if self.mode == 'cell' else "vertex"
+            bounds = self.grid.num_cells if self.mode == 'cell' else self.grid.num_vertices
+            print(f"Error: End coordinates {self.end_coords} are out of {bounds_name} bounds {[f'[0, {b-1}]' for b in bounds]}")
+            return False
+        
         return True
     
     def plan_path(self):
@@ -121,11 +117,10 @@ class PathPlanner:
         
         print(f"Planning path using {self.algorithm.lower()} algorithm in {self.mode} mode...")
         print(f"Start: {self.start_coords}, End: {self.end_coords}")
-        print(f"Raytracing: {self.raytracing_start} -> {self.raytracing_end}")
         
         # Execute the selected algorithm
         algorithm_class = self.algorithms[self.algorithm]
-        algo = algorithm_class(self.grid, self.nodes, self.start_coords, self.end_coords)
+        algo = algorithm_class(self.grid, self.nodes, self.start_coords, self.end_coords, self.mode)
         path = algo.run()
         
         if path:

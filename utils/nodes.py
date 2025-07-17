@@ -21,12 +21,10 @@ class Nodes:
         coords_tuple = tuple(coords)
         
         if len(coords_tuple) != self.dimensions:
-            print(f"Error: Expected {self.dimensions} coordinates, got {len(coords_tuple)}: {coords_tuple}")
             return None
         
         for i, coord in enumerate(coords_tuple):
             if not (0 <= coord < self.dimensions_sizes[i]):
-                print(f"Error: Coordinate {coord} at dimension {i} is out of bounds [0, {self.dimensions_sizes[i]-1}]")
                 return None
         
         if coords_tuple not in self.nodes:
