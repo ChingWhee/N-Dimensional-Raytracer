@@ -1,9 +1,13 @@
 import numpy as np
-
 THRESHOLD = 1e-8  # Threshold for floating point comparison
 
 class Raytracer:
     def __init__(self, dimensions, start_coords, end_coords):
+        # Initialize the raytracer
+        self.initialize(dimensions, start_coords, end_coords)
+    
+    def initialize(self, dimensions, start_coords, end_coords):
+        """Initialize all raytracing variables."""
         # Input parameters
         self.dimensions = dimensions
         
@@ -26,11 +30,6 @@ class Raytracer:
         self.t = 0.0                                                # t (current parametric position along ray)
         self.F = []                                                 # F (front cell relative coordinates matrix)
         
-        # Initialize the raytracer
-        self._initialize()
-    
-    def _initialize(self):
-        """Initialize all raytracing variables."""
         # Validate input coordinates
         if not self._validate_coordinates():
             return
@@ -54,7 +53,7 @@ class Raytracer:
                 self.D[i] = float('inf')
             
             # Handle edge case where D is very close to 0
-            if abs(self.D[i]) < 1e-9 and abs(self.delta_x[i]) > 1e-9:
+            if abs(self.D[i]) < THRESHOLD and abs(self.delta_x[i]) > THRESHOLD:
                 self.D[i] = 1.0 / abs(self.delta_x[i])
         
         # Store initial D values
