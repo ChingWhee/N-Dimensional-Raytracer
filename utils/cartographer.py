@@ -6,7 +6,7 @@ from utils.grid import Grid
 from utils.raytracer import Raytracer
 
 class Cartographer():
-    def __init__(self, dimensions, start_coords, end_coords, occupancy_grid, origin, loose, mode):
+    def __init__(self, dimensions, start_coords, end_coords, occupancy_grid, origin, loose):
         self.all_traversed_front_cells = set()  # Store front cells discovered by the raytracer (no duplicates)
         self.all_expanded_cells = set()  # Store all cells (front cells + bounding box cells)
 
@@ -17,21 +17,20 @@ class Cartographer():
         previous_cells = None  # Track previous front cells
         
         while not self.raytracer.reached():
-            # Get front cells at current position (convert directly to processed format)
-            current_front_cells = self.raytracer.front_cells()
-            current_cells = set(tuple(cell) for cell in current_front_cells)
+            # Get front cells at current position 
+            current_cells = set(tuple(cell) for cell in self.raytracer.front_cells())
             
             # Check if we have any front cells
             if not current_cells:
                 return self._handle_raytracing_failure()
             
-            # Check if next step is valid
+            # Check if next step is valid, if all cells are blocked or out of bounds, raytracing failed
             if not self._has_accessible_cells(current_cells):
-                # All cells are blocked, raytracing failed
                 return self._handle_raytracing_failure()
             
-            self.all_traversed_front_cells.update(current_cells)
-            self.all_expanded_cells.update(current_cells)  # Add front cells to combined set
+            accessible_current_cells = self._filter_accessible_cells(current_cells)
+            self.all_traversed_front_cells.update(accessible_current_cells)
+            self.all_expanded_cells.update(accessible_current_cells) 
             
             # If we have both previous and current cells, do further processing
             if previous_cells is not None and current_cells:
@@ -45,11 +44,7 @@ class Cartographer():
             previous_cells = current_cells
         
         # Only process final cells if we haven't already reached the goal during the loop
-        if self.raytracer.reached():
-            # Use the current position as final position, don't call front_cells() again
-            # The raytracer has reached t >= 1.0, so we're at or past the goal
-            pass
-        else:
+        if not self.raytracer.reached():
             # Handle final cells at the goal position
             final_front_cells = self.raytracer.front_cells()
             final_cells = set(tuple(cell) for cell in final_front_cells)
@@ -62,13 +57,16 @@ class Cartographer():
             if not self._has_accessible_cells(final_cells):
                 return self._handle_raytracing_failure()
             
-            self.all_traversed_front_cells.update(final_cells)
-            self.all_expanded_cells.update(final_cells)  # Add final front cells to combined set
+            accessible_final_cells = self._filter_accessible_cells(final_cells)
+            self.all_traversed_front_cells.update(accessible_final_cells)
+            self.all_expanded_cells.update(accessible_final_cells)  # Add final front cells to combined set
             
             # Process final transition if we have previous cells
             if previous_cells is not None and final_cells:
                 self._process_cell_transition(previous_cells, final_cells)
         
+        print(f"Raytracing completed. Total traversed front cells: {self.all_traversed_front_cells}")
+        print(f"Total expanded cells (including bounding boxes): {self.all_expanded_cells}")
         # Return success result with traversed cells
         return {
             'success': True,
@@ -84,10 +82,17 @@ class Cartographer():
     
     def _has_accessible_cells(self, cells):
         for cell in cells:
-            # A cell is accessible if it's within bounds AND not occupied
             if self.grid.is_within_grid_bounds(cell) and not self.grid.is_cell_occupied(cell):
                 return True
         return False
+    
+    def _filter_accessible_cells(self, cells):
+        """Filter cells to only include those that are within bounds and not occupied."""
+        accessible_cells = set()
+        for cell in cells:
+            if self.grid.is_within_grid_bounds(cell) and not self.grid.is_cell_occupied(cell):
+                accessible_cells.add(cell)
+        return accessible_cells
     
     def _handle_raytracing_failure(self):
         return {
