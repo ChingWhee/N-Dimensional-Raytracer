@@ -97,7 +97,7 @@ class Cartographer():
     def _handle_raytracing_failure(self):
         return {
             'success': False,
-            'error': 'Front cells are inaccessible (out of bounds or occupied)',
+            'error': 'Front cells are inaccessible',
             'traversed_front_cells': list(self.all_traversed_front_cells),
             'additional_expanded_cells': list(self.all_expanded_cells - self.all_traversed_front_cells),
             'all_expanded_cells': list(self.all_expanded_cells),

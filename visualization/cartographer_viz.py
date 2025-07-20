@@ -9,41 +9,40 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.cartographer import Cartographer
 
-def visualize_cartographer(start_coords, end_coords, occupancy_grid, origin=None, loose=1, mode='cell', title="Cartographer Visualization"):
+def visualize_cartographer(start_coords, end_coords, occupancy_grid, origin=None, loose=1, title="Cartographer Visualization"):
     """
     Main visualization function that handles both 2D and 3D cartographer visualization.
     """
     # Create and run cartographer
-    cartographer = Cartographer(len(occupancy_grid.shape), start_coords, end_coords, occupancy_grid, origin, loose, mode)
+    cartographer = Cartographer(len(occupancy_grid.shape), start_coords, end_coords, occupancy_grid, origin, loose)
     result = cartographer.map()
     
     dimensions = len(occupancy_grid.shape)
     
     if dimensions == 2:
-        return _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result, mode, title, origin)
+        return _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result, title, origin)
     elif dimensions == 3:
-        return _visualize_3d_cartographer(start_coords, end_coords, occupancy_grid, result, mode, title, origin)
+        return _visualize_3d_cartographer(start_coords, end_coords, occupancy_grid, result, title, origin)
     else:
         print(f"Visualization not supported for {dimensions}D. Returning result.")
         return result
 
-def _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result, mode, title, origin=None):
+def _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result, title, origin=None):
     """Visualize 2D cartographer results following pathplanning conventions."""
-    # Create figure and axis
-    fig, ax = plt.subplots(1, 1, figsize=(12, 10))
+    # Create figure with extra width for info panel
+    fig, (ax, info_ax) = plt.subplots(1, 2, figsize=(16, 10), gridspec_kw={'width_ratios': [6, 1]})
+    
+    # Hide the info axis (we'll just use it for text placement)
+    info_ax.axis('off')
     
     # Handle origin offset for coordinate display
     if origin is None:
         origin = [0, 0]
     origin = np.array(origin)
     
-    # Convert coordinates based on mode for visualization
-    if mode == 'vertex':
-        vis_start_coords = np.array(start_coords, dtype=float)
-        vis_end_coords = np.array(end_coords, dtype=float)
-    else:  # cell mode 
-        vis_start_coords = np.array(start_coords, dtype=float) + 0.5
-        vis_end_coords = np.array(end_coords, dtype=float) + 0.5
+    # Use coordinates as-is (no mode-based shifting for cartographer)
+    vis_start_coords = np.array(start_coords, dtype=float)
+    vis_end_coords = np.array(end_coords, dtype=float)
     
     # Extract data from result
     success = result.get('success', False)
@@ -117,7 +116,7 @@ def _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result,
     ax.set_xticks(range(int(x_min), int(x_max) + 1))
     ax.set_yticks(range(int(y_min), int(y_max) + 1))
     
-    # Add comprehensive cartographer information
+    # Add comprehensive cartographer information in separate panel
     if success:
         status_text = '[SUCCESS] RAY TRACED'
         status_color = 'lightgreen'
@@ -125,29 +124,26 @@ def _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result,
         status_text = '[FAILED] RAY BLOCKED'
         status_color = 'lightcoral'
     
-    # Create detailed information
-    info_text = f'{status_text}\n'
+    # Create detailed information for info panel
+    info_text = f'{status_text}\n\n'
     if not success:
-        info_text += f'Error: {result.get("error", "Unknown error")}\n'
+        info_text += f'Error: {result.get("error", "Unknown error")}\n\n'
     info_text += f'Front cells: {len(traversed_front_cells)}\n'
     info_text += f'Additional cells: {len(additional_expanded_cells)}\n'
-    info_text += f'Total cells: {len(all_expanded_cells)}\n'
-    info_text += f'====================\n'
+    info_text += f'Total cells: {len(all_expanded_cells)}\n\n'
     info_text += f'START: ({start_coords[0]}, {start_coords[1]})\n'
-    info_text += f'END: ({end_coords[0]}, {end_coords[1]})\n'
-    info_text += f'Mode: {mode.upper()}\n'
+    info_text += f'END: ({end_coords[0]}, {end_coords[1]})\n\n'
     
     # Add raytracer position information if available
     if 'raytracer_position' in result:
         raytracer_pos = result['raytracer_position']
-        info_text += f'====================\n'
         info_text += f'Ray Length: {raytracer_pos.get("parametric_position", 0):.3f}\n'
         info_text += f'Reached Goal: {raytracer_pos.get("reached_goal", False)}\n'
     
-    # Position info box in top-left corner for better visibility
-    ax.text(0.02, 0.98, info_text, 
-            transform=ax.transAxes, fontsize=9, verticalalignment='top',
-            bbox=dict(boxstyle='round,pad=0.5', facecolor=status_color, alpha=0.9, edgecolor='black'))
+    # Place info text in the info panel
+    info_ax.text(0.05, 0.95, info_text, 
+                transform=info_ax.transAxes, fontsize=11, verticalalignment='top',
+                bbox=dict(boxstyle='round,pad=0.5', facecolor=status_color, alpha=0.9, edgecolor='black'))
     
     # Add coordinate labels directly on start/end points with origin-aware coordinates
     ax.annotate(f'START\n({start_coords[0]}, {start_coords[1]})', 
@@ -162,12 +158,12 @@ def _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result,
                 bbox=dict(boxstyle='round,pad=0.3', facecolor='lightcoral', alpha=0.8),
                 fontsize=8, ha='left')
     
-    plt.tight_layout(pad=10.0)  
+    plt.tight_layout(pad=5.0)  
     plt.show()
     
     return result
 
-def _visualize_3d_cartographer(start_coords, end_coords, occupancy_grid, result, mode, title, origin=None):
+def _visualize_3d_cartographer(start_coords, end_coords, occupancy_grid, result, title, origin=None):
     """Visualize 3D cartographer results with multiple orthogonal views."""
     # Get grid dimensions
     depth, height, width = occupancy_grid.shape
@@ -177,13 +173,9 @@ def _visualize_3d_cartographer(start_coords, end_coords, occupancy_grid, result,
         origin = [0, 0, 0]
     origin = np.array(origin)
     
-    # Convert coordinates based on mode for visualization
-    if mode == 'vertex':
-        vis_start_coords = np.array(start_coords, dtype=float)
-        vis_end_coords = np.array(end_coords, dtype=float)
-    else:  # cell mode 
-        vis_start_coords = np.array(start_coords, dtype=float) + 0.5
-        vis_end_coords = np.array(end_coords, dtype=float) + 0.5
+    # Use coordinates as-is (no mode-based shifting for cartographer)
+    vis_start_coords = np.array(start_coords, dtype=float)
+    vis_end_coords = np.array(end_coords, dtype=float)
     
     # Extract data from result
     success = result.get('success', False)
@@ -197,39 +189,77 @@ def _visualize_3d_cartographer(start_coords, end_coords, occupancy_grid, result,
     else:
         cartographer_status = "[FAILED] RAY BLOCKED"
     
-    # Create figure with multiple subplots for orthogonal views
-    fig = plt.figure(figsize=(20, 12))
+    # Create figure with extra width for all views plus info panel
+    fig = plt.figure(figsize=(24, 9))
+    fig.subplots_adjust(
+        left=0.05,    
+        right=0.75,   
+        top=0.95,
+        bottom=0.05,
+        wspace=0.3,
+        hspace=0.3
+    )
     
     # Add main title with status
     fig.suptitle(f'{title} | {cartographer_status} | Start: {start_coords} → End: {end_coords}', 
                  fontsize=16, fontweight='bold')
     
-    # 3D perspective view
+    # 3D perspective view (larger)
     ax1 = fig.add_subplot(221, projection='3d')
-    _draw_3d_cartographer_view(ax1, vis_start_coords, vis_end_coords, occupancy_grid, result, mode,
+    _draw_3d_cartographer_view(ax1, vis_start_coords, vis_end_coords, occupancy_grid, result,
                               f"{title} - 3D View")
     
     # XY view (top-down, looking along Z-axis)
     ax2 = fig.add_subplot(222)
-    _draw_2d_cartographer_projection_view(ax2, vis_start_coords, vis_end_coords, occupancy_grid, result, 'xy', mode,
+    _draw_2d_cartographer_projection_view(ax2, vis_start_coords, vis_end_coords, occupancy_grid, result, 'xy',
                             f"{title} - XY View (Top)")
     
     # XZ view (side view, looking along Y-axis)
     ax3 = fig.add_subplot(223)
-    _draw_2d_cartographer_projection_view(ax3, vis_start_coords, vis_end_coords, occupancy_grid, result, 'xz', mode,
+    _draw_2d_cartographer_projection_view(ax3, vis_start_coords, vis_end_coords, occupancy_grid, result, 'xz',
                             f"{title} - XZ View (Side)")
     
-    # YZ view (front view, looking along X-axis)
+    # YZ view (side view, looking along X-axis)
     ax4 = fig.add_subplot(224)
-    _draw_2d_cartographer_projection_view(ax4, vis_start_coords, vis_end_coords, occupancy_grid, result, 'yz', mode,
+    _draw_2d_cartographer_projection_view(ax4, vis_start_coords, vis_end_coords, occupancy_grid, result, 'yz',
                             f"{title} - YZ View (Front)")
     
-    plt.tight_layout() 
+    # Info panel in dedicated space on the right
+    ax_info = fig.add_axes([0.78, 0.05, 0.20, 0.90])
+    ax_info.axis('off')
+    
+    # Create comprehensive info text for 3D
+    info_text = f'{cartographer_status}\n\n'
+    if not success:
+        info_text += f'Error: {result.get("error", "Unknown error")}\n\n'
+    info_text += f'Front cells: {len(traversed_front_cells)}\n'
+    info_text += f'Additional cells: {len(additional_expanded_cells)}\n'
+    info_text += f'Total cells: {len(all_expanded_cells)}\n\n'
+    info_text += f'START: ({start_coords[0]}, {start_coords[1]}, {start_coords[2]})\n'
+    info_text += f'END: ({end_coords[0]}, {end_coords[1]}, {end_coords[2]})\n\n'
+    
+    # Add raytracer position information if available
+    if 'raytracer_position' in result:
+        raytracer_pos = result['raytracer_position']
+        info_text += f'Ray Length: {raytracer_pos.get("parametric_position", 0):.3f}\n'
+        info_text += f'Reached Goal: {raytracer_pos.get("reached_goal", False)}\n'
+    
+    # Set info panel colors
+    if success:
+        status_color = 'lightgreen'
+    else:
+        status_color = 'lightcoral'
+    
+    # Place info text in the dedicated info panel
+    ax_info.text(0.05, 0.95, info_text, 
+            transform=ax_info.transAxes, fontsize=12, verticalalignment='top',
+            bbox=dict(boxstyle='round,pad=0.5', facecolor=status_color, alpha=0.9, edgecolor='black'))
+    
     plt.show()
     
     return result
 
-def _draw_3d_cartographer_view(ax, vis_start_coords, vis_end_coords, occupancy_grid, result, mode, title):
+def _draw_3d_cartographer_view(ax, vis_start_coords, vis_end_coords, occupancy_grid, result, title):
     """Draw the 3D perspective view for cartographer results."""
     depth, height, width = occupancy_grid.shape
     
@@ -322,7 +352,7 @@ def _draw_cube(ax, x, y, z, color='blue', alpha=0.3):
     poly3d = Poly3DCollection(faces, alpha=alpha, facecolor=color, edgecolor='black', linewidth=0.8)
     ax.add_collection3d(poly3d)
 
-def _draw_2d_cartographer_projection_view(ax, vis_start_coords, vis_end_coords, occupancy_grid, result, view_type, mode, title):
+def _draw_2d_cartographer_projection_view(ax, vis_start_coords, vis_end_coords, occupancy_grid, result, view_type, title):
     """Draw a 2D projection view for 3D cartographer results."""
     depth, height, width = occupancy_grid.shape
     

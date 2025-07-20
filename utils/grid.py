@@ -59,8 +59,10 @@ class Grid:
         grid_indices = np.array(cell_coords) - self.origin
         
         # Check if coordinates are within grid bounds
+        # Account for reversed dimension ordering: coordinates (x,y,z) vs array shape (z,y,x)
+        array_shape = self.occupancy_grid.shape[::-1]  # Reverse to match coordinate order
         for i, idx in enumerate(grid_indices):
-            if idx < 0 or idx >= self.occupancy_grid.shape[i]:
+            if idx < 0 or idx >= array_shape[i]:
                 return True  # Consider out-of-bounds as occupied
         
         # Use direct indexing for top-left origin coordinate system
@@ -84,8 +86,10 @@ class Grid:
     
     def is_within_grid_bounds(self, world_coords):
         grid_indices = self.world_to_grid(world_coords)
+        # Account for reversed dimension ordering: coordinates (x,y,z) vs array shape (z,y,x)
+        array_shape = self.occupancy_grid.shape[::-1]  # Reverse to match coordinate order
         for i, idx in enumerate(grid_indices):
-            if idx < 0 or idx >= self.occupancy_grid.shape[i]:
+            if idx < 0 or idx >= array_shape[i]:
                 return False
         return True
     

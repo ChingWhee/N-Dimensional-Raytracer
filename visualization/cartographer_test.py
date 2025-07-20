@@ -6,76 +6,147 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from visualization.cartographer_viz import visualize_cartographer
 
 def create_2d_test_grids():
-    """Create 2D test grids for cartographer visualization."""
     test_cases = []
     
-    # Simple 2x2 grid with obstacles
-    grid_2d_1 = np.array([
+    grid_2d_01 = np.array([
+        [0, 0],  
+        [0, 0],
+    ], dtype=bool)
+
+    grid_2d_02 = np.array([
         [0, 1],  
         [1, 0],
     ], dtype=bool)
 
     test_cases.append([
-        2, [0.0, 0.0], [1.5, 1.5], grid_2d_1, None, 1, "2D Simple diagonal", "cell"
+        2, [0.3, 0.3], [1.6, 1.6], grid_2d_01, None, 1, "2x2 no obstacles 1"
     ])
-    test_cases.append([
-        2, [0.0, 0.0], [1.0, 1.0], grid_2d_1, None, 1, "2D Simple diagonal vertex", "vertex"
-    ])
-    
-    # Larger grid with clear path
-    grid_2d_2 = np.array([
-        [0, 0, 0, 0],  
-        [0, 1, 1, 0],  
-        [1, 1, 0, 0],
-        [0, 0, 0, 0],
-    ], dtype=bool)
 
     test_cases.append([
-        2, [0.5, 0.5], [3.5, 3.5], grid_2d_2, None, 1, "4x3 diagonal path", "cell"
+        2, [0.3, 0.3], [2.0, 1.6], grid_2d_01, None, 1, "2x2 no obstacles 2"
     ])
+
     test_cases.append([
-        2, [0.0, 0.0], [3.0, 3.0], grid_2d_2, None, 1, "4x3 diagonal path vertex", "vertex"
+        2, [0.0, 1.0], [2.0, 1.0], grid_2d_01, None, 1, "2x2 no obstacles (straight)"
     ])
-    
-    # Blocked path test
-    grid_2d_3 = np.array([
-        [0, 1, 0],  
-        [1, 1, 1],  
+
+    test_cases.append([
+        2, [0.3, 0.3], [1.6, 1.6], grid_2d_02, None, 1, "2x2 with obstacles"
+    ])
+
+    test_cases.append([
+        2, [0.3, 0.3], [2.0, 1.6], grid_2d_02, None, 1, "2x2 with blocking obstacles"
+    ])
+
+    grid_2d_11 = np.array([
+        [0, 0, 0],  
+        [0, 0, 0],
+        [0, 0, 0],
+    ], dtype=bool)
+
+    grid_2d_12 = np.array([
+        [0, 0, 1],  
         [0, 1, 0],
+        [1, 0, 0],
+    ], dtype=bool)
+
+    grid_2d_13 = np.array([
+        [0, 0, 1],  
+        [0, 1, 1],
+        [1, 1, 0],
     ], dtype=bool)
 
     test_cases.append([
-        2, [0.5, 0.5], [2.5, 2.5], grid_2d_3, None, 1, "Blocked path test", "cell"
+        2, [0.3, 0.3], [2.6, 2.6], grid_2d_11, None, 1, "3x3 no obstacles 1"
+    ])
+
+    test_cases.append([
+        2, [0.3, 0.3], [2.6, 1.6], grid_2d_11, None, 1, "3x3 no obstacles 2"
+    ])
+
+    test_cases.append([
+        2, [1.5, 0.5], [2.5, 1.5], grid_2d_12, None, 1, "3x3 obstacles (not blocked)"
+    ])
+
+    test_cases.append([
+        2, [0.0, 0.0], [2.0, 3.0], grid_2d_12, None, 1, "3x3 obstacles (blocked)"
+    ])
+
+    test_cases.append([
+        2, [2.0, 0.0], [2.0, 3.0], grid_2d_12, None, 1, "3x3 obstacles (straight)"
+    ])
+
+    test_cases.append([
+        2, [2.0, 0.0], [2.0, 3.0], grid_2d_13, None, 1, "3x3 obstacles (straight & blocked)"
     ])
     
     return test_cases
 
 def create_3d_test_grids():
-    """Create 3D test grids for cartographer visualization."""
     test_cases = []
     
-    # 3D Test Case - Simple 3D grid with obstacles
-    grid_3d_simple = np.array([
-        # Layer 0 (Z=0) - Free space
+    grid_3d_01 = np.array([
         [[0, 0, 0],
          [0, 0, 0],
          [0, 0, 0]],
         
-        # Layer 1 (Z=1) - Central obstacle
         [[0, 0, 0],
-         [0, 1, 0],
+         [0, 0, 0],
          [0, 0, 0]],
         
-        # Layer 2 (Z=2) - Free space
         [[0, 0, 0],
          [0, 0, 0],
          [0, 0, 0]]
     ], dtype=bool)
     
     test_cases.append([
-        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_simple, None, 1, "3D Simple diagonal", "cell"
+        3, [0.0, 0.0, 0.0], [3.0, 3.0, 3.0], grid_3d_01, None, 1, "3D no obstacle diagonal"
     ])
-    
+
+    test_cases.append([
+        3, [1.0, 1.0, 0.0], [1.0, 1.0, 3.0], grid_3d_01, None, 1, "3D no obstacle straight"
+    ])
+
+    grid_3d_02 = np.array([
+        [[0, 1],
+         [1, 1]],
+        
+        [[1, 1],
+         [1, 0]],
+    ], dtype=bool)
+
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_02, None, 1, "3D obstacle (not blocked)"
+    ])
+
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [2.0, 1.6, 1.8], grid_3d_02, None, 1, "3D obstacle (blocked)"
+    ])
+
+    grid_3d_10 = np.array([       
+        [[0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0]],
+
+        [[0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0]],
+    ], dtype=bool)
+
+    grid_3d_11 = np.array([       
+        [[0, 0, 0, 1, 0],
+        [1, 1, 1, 1, 1]],
+
+        [[1, 1, 1, 1, 1],
+        [0, 1, 0, 0, 0]],
+    ], dtype=bool)
+
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [5.0, 2.0, 2.0], grid_3d_10, None, 1, "3D obstacle (allowed)"
+    ])
+
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [5.0, 2.0, 2.0], grid_3d_11, None, 1, "3D obstacle (blocked)"
+    ])
+
     return test_cases
 
 def create_test_grids():
@@ -90,21 +161,21 @@ def test_cartographer_viz():
     test_cases = create_test_grids()
     
     for i, test_case in enumerate(test_cases):
-        dimensions, start_coords, end_coords, occupancy_grid, origin, loose, description, mode = test_case
+        dimensions, start_coords, end_coords, occupancy_grid, origin, loose, description = test_case
         
         print(f"\n=== Test Case {i+1}: {description} ===")
         print(f"Dimensions: {dimensions}D")
         print(f"Grid shape: {occupancy_grid.shape}")
         print(f"Start: {start_coords}, End: {end_coords}")
-        print(f"Origin: {origin}, Loose: {loose}, Mode: {mode}")
+        print(f"Origin: {origin}, Loose: {loose}")
         
-        # Test the specific mode for this case
-        print(f"\n--- Testing {mode} mode ---")
-        title = f"Test Case {i+1}: {description} ({mode} mode)"
+        # Test cartographer visualization
+        print(f"\n--- Testing cartographer ---")
+        title = f"Test Case {i+1}: {description}"
         
         try:
             result = visualize_cartographer(start_coords, end_coords, occupancy_grid, 
-                                          origin=origin, loose=loose, mode=mode, title=title)
+                                          origin=origin, loose=loose, title=title)
             if result['success']:
                 print(f"[SUCCESS] Ray traced successfully")
                 print(f"  Front cells: {len(result['traversed_front_cells'])}")
@@ -132,20 +203,20 @@ def run_specific_test(test_index):
         return
     
     test_case = test_cases[test_index]
-    dimensions, start_coords, end_coords, occupancy_grid, origin, loose, description, mode = test_case
+    dimensions, start_coords, end_coords, occupancy_grid, origin, loose, description = test_case
     
     print(f"\n=== Test Case {test_index+1}: {description} ===")
     print(f"Dimensions: {dimensions}D")
     print(f"Grid shape: {occupancy_grid.shape}")
     print(f"Start: {start_coords}, End: {end_coords}")
-    print(f"Origin: {origin}, Loose: {loose}, Mode: {mode}")
+    print(f"Origin: {origin}, Loose: {loose}")
     
-    print(f"\n--- Testing {mode} mode ---")
-    title = f"Test Case {test_index+1}: {description} ({mode} mode)"
+    print(f"\n--- Testing cartographer ---")
+    title = f"Test Case {test_index+1}: {description}"
     
     try:
         result = visualize_cartographer(start_coords, end_coords, occupancy_grid, 
-                                      origin=origin, loose=loose, mode=mode, title=title)
+                                      origin=origin, loose=loose, title=title)
         if result['success']:
             print(f"[SUCCESS] Ray traced successfully")
             print(f"  Front cells: {len(result['traversed_front_cells'])}")
@@ -164,8 +235,8 @@ def list_test_cases():
     print("Available cartographer test cases:")
     print("=" * 50)
     for i, test_case in enumerate(test_cases):
-        dimensions, start_coords, end_coords, occupancy_grid, origin, loose, description, mode = test_case
-        print(f"{i:2d}: {description} ({dimensions}D, {occupancy_grid.shape}, loose={loose}, mode={mode})")
+        dimensions, start_coords, end_coords, occupancy_grid, origin, loose, description = test_case
+        print(f"{i:2d}: {description} ({dimensions}D, {occupancy_grid.shape}, loose={loose})")
 
 if __name__ == "__main__":
     # You can run different test functions:
