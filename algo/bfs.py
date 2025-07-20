@@ -28,9 +28,13 @@ class BFS:
         
         for direction in self.grid.valid_directions:
             neighbor = coords_array + np.array(direction)
+            neighbor_node = self.nodes.getNode(*neighbor)
+
+            if neighbor_node is None or neighbor_node.expanded:
+                continue
             
-            # Check if neighbor is within valid bounds for the current mode
             if not self.grid.is_within_bounds_for_mode(neighbor, self.mode):
+                print(f"Neighbor {neighbor} is out of bounds for mode {self.mode}")
                 continue  # Skip out-of-bounds neighbors
             
             # Convert neighbor to raytracing coordinates based on mode
@@ -41,8 +45,9 @@ class BFS:
             
             # Use raytracer to trace from current to neighbor and check accessibility
             if self._is_neighbor_accessible(current_raytracing, neighbor_raytracing):
+                print(f"Neighbor {neighbor} is accessible from {coords} via raytracing")
                 neighbors.append(neighbor)
-        
+
         return neighbors
     
     def _is_neighbor_accessible(self, start_ray, end_ray):
@@ -59,14 +64,14 @@ class BFS:
                 current_node = tuple((start_ray - 0.5).astype(int))  # Convert current ray position to grid coordinates
                 intersected_cells = [cell for cell in intersected_cells if tuple(cell) != current_node]
             
-            # The neighbor is accessible if one intersected cell are accessible
-            # A cell is accessible if it's within bounds and not occupied
+            # The neighbor is accessible if NOT ALL intersected cells are occupied
+            # This allows navigation around obstacles in vertex mode
             for cell_coords in intersected_cells:
                 # Check if cell is within grid bounds
                 if self._is_within_bounds(cell_coords) and not self.grid.is_cell_occupied(cell_coords):
-                    return True  # Valid intersected cell found
+                    return True  # Found at least one free cell - movement is allowed
             
-            return False  # All valid intersected cells are accessible
+            return False  # All valid intersected cells are occupied - movement blocked
         
         except Exception as e:
             print(f"Error in raytracing: {e}")
@@ -75,8 +80,12 @@ class BFS:
     def _is_within_bounds(self, cell_coords):
         """Check if cell coordinates are within grid bounds."""
         for i, coord in enumerate(cell_coords):
-            if coord < 0 or coord >= self.grid.num_cells[i]:
-                return False
+            if self.mode == 'vertex':
+                if coord < 0 or coord >= self.grid.num_vertices[i]:
+                    return False
+            else:  # cell mode
+                if coord < 0 or coord >= self.grid.num_cells[i]:
+                    return False
         return True
     
     def run(self):
@@ -101,15 +110,13 @@ class BFS:
                 print(f"📍 Final path found: {path}")
                 return path
             
+            print(f"Expanding node: {current}")
             for neighbor in self._get_neighbors(current):
                 neighbor_node = self.nodes.getNode(*neighbor)
-                
-                # Check if this node hasn't been expanded yet
-                if neighbor_node and not neighbor_node.expanded:
-                    neighbor_node.expanded = True
-                    neighbor_node.parent = current
-                    queue.append(neighbor)
-        
+                neighbor_node.expanded = True
+                neighbor_node.parent = current
+                queue.append(neighbor)
+
         # If no complete path found, reconstruct the attempted path from the farthest explored node
         attempted_path = self._get_attempted_path()
         print(f"📍 No complete path found. Attempted path: {attempted_path}")

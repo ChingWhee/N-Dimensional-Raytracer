@@ -26,6 +26,7 @@ class Grid:
                 raise ValueError(f"origin must have {self.dimensions} coordinates, got {len(self.origin)}")
         
         self.num_cells = np.array(occupancy_grid.shape)  # Number of cells in each dimension
+        self.num_cells = self.num_cells[::-1]            # Reverse order to match visual expectation (last dimension corresponds to first array dimension)
         self.num_vertices = self.num_cells + 1           # Number of vertices in each dimension
         
         # Validate inputs
@@ -97,6 +98,7 @@ class Grid:
         else:
             return False
         
+        print(f"Checking bounds for {coords} in mode {mode} with bounds {bounds}")
         for i, coord in enumerate(coords):
             if not (0 <= coord < bounds[i]):
                 return False

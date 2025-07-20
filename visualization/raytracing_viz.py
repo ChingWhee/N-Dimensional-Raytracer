@@ -291,7 +291,7 @@ def _draw_cube(ax, x, y, z, color='blue', alpha=0.3):
 
 # Test parameters: [dimensions, start_coords, end_coords]
 TEST_PARAMETERS = [
-    [2, [0.5, 0.0], [3.5, 3.5]],
+    [2, [0.0, 0.0], [4.0, 2.0]],
     [2, [-3.0, -3.0], [3.0, 3.0]],
     [2, [0.3, 0.0], [0.2, 3.1]],
     [2, [0.0, 0.0], [0.0, 0.0]],
