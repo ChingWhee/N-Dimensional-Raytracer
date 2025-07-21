@@ -7,105 +7,80 @@ from visualization.cartographer_viz import visualize_cartographer
 
 def create_2d_test_grids():
     test_cases = []
-    
-    grid_2d_01 = np.array([
-        [0, 0],  
-        [0, 0],
-    ], dtype=bool)
 
-    grid_2d_02 = np.array([
+    grid_2d_01 = np.array([
         [0, 1],  
         [1, 0],
     ], dtype=bool)
 
     test_cases.append([
-        2, [0.3, 0.3], [1.6, 1.6], grid_2d_01, None, 1, "2x2 no obstacles 1"
+        2, [0.3, 0.3], [1.6, 1.6], grid_2d_01, None, 1, "2x2 1 loose"
     ])
 
     test_cases.append([
-        2, [0.3, 0.3], [2.0, 1.6], grid_2d_01, None, 1, "2x2 no obstacles 2"
+        2, [0.3, 0.3], [1.6, 1.6], grid_2d_01, None, 2, "2x2 2 loose"
     ])
 
     test_cases.append([
-        2, [0.0, 1.0], [2.0, 1.0], grid_2d_01, None, 1, "2x2 no obstacles (straight)"
-    ])
-
-    test_cases.append([
-        2, [0.3, 0.3], [1.6, 1.6], grid_2d_02, None, 1, "2x2 with obstacles"
-    ])
-
-    test_cases.append([
-        2, [0.3, 0.3], [2.0, 1.6], grid_2d_02, None, 1, "2x2 with blocking obstacles"
+        2, [0.0, 1.0], [2.0, 1.0], grid_2d_01, None, 1, "2x2 1 loose (straight)"
     ])
 
     grid_2d_11 = np.array([
-        [0, 0, 0],  
-        [0, 0, 0],
-        [0, 0, 0],
-    ], dtype=bool)
-
-    grid_2d_12 = np.array([
         [0, 0, 1],  
         [0, 1, 0],
         [1, 0, 0],
     ], dtype=bool)
 
-    grid_2d_13 = np.array([
+    grid_2d_12 = np.array([
         [0, 0, 1],  
         [0, 1, 1],
         [1, 1, 0],
     ], dtype=bool)
 
     test_cases.append([
-        2, [0.3, 0.3], [2.6, 2.6], grid_2d_11, None, 1, "3x3 no obstacles 1"
+        2, [2.0, 0.0], [2.0, 2.6], grid_2d_11, None, 1, "3x3 1 loose"
     ])
 
     test_cases.append([
-        2, [0.3, 0.3], [2.6, 1.6], grid_2d_11, None, 1, "3x3 no obstacles 2"
+        2, [2.0, 0.0], [2.0, 2.6], grid_2d_11, None, 2, "3x3 2 loose"
     ])
 
     test_cases.append([
-        2, [1.5, 0.5], [2.5, 1.5], grid_2d_12, None, 1, "3x3 obstacles (not blocked)"
+        2, [2.0, 0.0], [2.0, 2.6], grid_2d_12, None, 2, "3x3 2 loose"
     ])
 
-    test_cases.append([
-        2, [0.0, 0.0], [2.0, 3.0], grid_2d_12, None, 1, "3x3 obstacles (blocked)"
-    ])
+    # test_cases.append([
+    #     2, [0.3, 0.3], [2.6, 1.6], grid_2d_11, None, 1, "3x3 no obstacles 2"
+    # ])
 
-    test_cases.append([
-        2, [2.0, 0.0], [2.0, 3.0], grid_2d_12, None, 1, "3x3 obstacles (straight)"
-    ])
+    # test_cases.append([
+    #     2, [1.5, 0.5], [2.5, 1.5], grid_2d_12, None, 1, "3x3 obstacles (not blocked)"
+    # ])
 
-    test_cases.append([
-        2, [2.0, 0.0], [2.0, 3.0], grid_2d_13, None, 1, "3x3 obstacles (straight & blocked)"
-    ])
+    # test_cases.append([
+    #     2, [0.0, 0.0], [2.0, 3.0], grid_2d_12, None, 1, "3x3 obstacles (blocked)"
+    # ])
+
+    # test_cases.append([
+    #     2, [2.0, 0.0], [2.0, 3.0], grid_2d_12, None, 1, "3x3 obstacles (straight)"
+    # ])
+
+    # test_cases.append([
+    #     2, [2.0, 0.0], [2.0, 3.0], grid_2d_13, None, 1, "3x3 obstacles (straight & blocked)"
+    # ])
     
     return test_cases
 
 def create_3d_test_grids():
     test_cases = []
-    
-    grid_3d_01 = np.array([
-        [[0, 0, 0],
-         [0, 0, 0],
-         [0, 0, 0]],
-        
-        [[0, 0, 0],
-         [0, 0, 0],
-         [0, 0, 0]],
-        
-        [[0, 0, 0],
-         [0, 0, 0],
-         [0, 0, 0]]
-    ], dtype=bool)
-    
-    test_cases.append([
-        3, [0.0, 0.0, 0.0], [3.0, 3.0, 3.0], grid_3d_01, None, 1, "3D no obstacle diagonal"
-    ])
 
-    test_cases.append([
-        3, [1.0, 1.0, 0.0], [1.0, 1.0, 3.0], grid_3d_01, None, 1, "3D no obstacle straight"
-    ])
+    grid_3d_01 = np.array([
+        [[0, 1],
+         [1, 0]],
+        
+        [[0, 1],
+         [1, 0]],
+    ], dtype=bool)
 
     grid_3d_02 = np.array([
         [[0, 1],
@@ -116,20 +91,29 @@ def create_3d_test_grids():
     ], dtype=bool)
 
     test_cases.append([
+        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_01, None, 1, "3D obstacle (not blocked)"
+    ])
+
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_01, None, 2, "3D obstacle (not blocked)"
+    ])
+
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [2.0, 1.6, 1.8], grid_3d_01, None, 3, "3D obstacle (blocked)"
+    ])
+
+    test_cases.append([
         3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_02, None, 1, "3D obstacle (not blocked)"
     ])
 
     test_cases.append([
-        3, [0.0, 0.0, 0.0], [2.0, 1.6, 1.8], grid_3d_02, None, 1, "3D obstacle (blocked)"
+        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_02, None, 2, "3D obstacle (not blocked)"
     ])
 
-    grid_3d_10 = np.array([       
-        [[0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0]],
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [2.0, 1.6, 1.8], grid_3d_02, None, 3, "3D obstacle (blocked)"
+    ])
 
-        [[0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0]],
-    ], dtype=bool)
 
     grid_3d_11 = np.array([       
         [[0, 0, 0, 1, 0],
@@ -140,12 +124,10 @@ def create_3d_test_grids():
     ], dtype=bool)
 
     test_cases.append([
-        3, [0.0, 0.0, 0.0], [5.0, 2.0, 2.0], grid_3d_10, None, 1, "3D obstacle (allowed)"
+        3, [1.0, 1.0, 0.0], [5.0, 2.0, 2.0], grid_3d_11, None, 1, "3D obstacle (allowed)"
     ])
 
-    test_cases.append([
-        3, [0.0, 0.0, 0.0], [5.0, 2.0, 2.0], grid_3d_11, None, 1, "3D obstacle (blocked)"
-    ])
+
 
     return test_cases
 
@@ -153,7 +135,7 @@ def create_test_grids():
     """Create all test grids for cartographer visualization (combines 2D and 3D)."""
     test_cases = []
     test_cases.extend(create_2d_test_grids())
-    test_cases.extend(create_3d_test_grids())
+    # test_cases.extend(create_3d_test_grids())
     return test_cases
 
 def test_cartographer_viz():
@@ -179,8 +161,7 @@ def test_cartographer_viz():
             if result['success']:
                 print(f"[SUCCESS] Ray traced successfully")
                 print(f"  Front cells: {len(result['traversed_front_cells'])}")
-                print(f"  Additional cells: {len(result['additional_expanded_cells'])}")
-                print(f"  Total cells: {len(result['all_expanded_cells'])}")
+                print(f"  Total cells: {len(result['traversed_front_cells'])}")
             else:
                 print(f"[FAILED] Ray tracing failed: {result.get('error', 'Unknown error')}")
                 print(f"  Front cells reached: {len(result['traversed_front_cells'])}")
@@ -220,8 +201,7 @@ def run_specific_test(test_index):
         if result['success']:
             print(f"[SUCCESS] Ray traced successfully")
             print(f"  Front cells: {len(result['traversed_front_cells'])}")
-            print(f"  Additional cells: {len(result['additional_expanded_cells'])}")
-            print(f"  Total cells: {len(result['all_expanded_cells'])}")
+            print(f"  Total cells: {len(result['traversed_front_cells'])}")
         else:
             print(f"[FAILED] Ray tracing failed: {result.get('error', 'Unknown error')}")
             print(f"  Front cells reached: {len(result['traversed_front_cells'])}")

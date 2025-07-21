@@ -47,8 +47,7 @@ def _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result,
     # Extract data from result
     success = result.get('success', False)
     traversed_front_cells = result.get('traversed_front_cells', [])
-    additional_expanded_cells = result.get('additional_expanded_cells', [])
-    all_expanded_cells = result.get('all_expanded_cells', [])
+    all_expanded_cells = result.get('traversed_front_cells', [])
     
     # Set visualization bounds with origin offset
     height, width = occupancy_grid.shape
@@ -82,15 +81,6 @@ def _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result,
                                    facecolor='lightblue', alpha=0.6)
             ax.add_patch(rect)
     
-    # Draw additional expanded cells (light green to differentiate from front cells)
-    if additional_expanded_cells:
-        for cell_coords in additional_expanded_cells:
-            # Apply origin offset to cell coordinates
-            x, y = int(cell_coords[0]) + origin[0], int(cell_coords[1]) + origin[1]
-            rect = patches.Rectangle((x, y), 1, 1, 
-                                   linewidth=1.5, edgecolor='green', 
-                                   facecolor='lightgreen', alpha=0.4)
-            ax.add_patch(rect)
     
     # Draw ray line from start to end with origin offset
     start_display = vis_start_coords + origin
@@ -129,7 +119,6 @@ def _visualize_2d_cartographer(start_coords, end_coords, occupancy_grid, result,
     if not success:
         info_text += f'Error: {result.get("error", "Unknown error")}\n\n'
     info_text += f'Front cells: {len(traversed_front_cells)}\n'
-    info_text += f'Additional cells: {len(additional_expanded_cells)}\n'
     info_text += f'Total cells: {len(all_expanded_cells)}\n\n'
     info_text += f'START: ({start_coords[0]}, {start_coords[1]})\n'
     info_text += f'END: ({end_coords[0]}, {end_coords[1]})\n\n'
@@ -180,8 +169,7 @@ def _visualize_3d_cartographer(start_coords, end_coords, occupancy_grid, result,
     # Extract data from result
     success = result.get('success', False)
     traversed_front_cells = result.get('traversed_front_cells', [])
-    additional_expanded_cells = result.get('additional_expanded_cells', [])
-    all_expanded_cells = result.get('all_expanded_cells', [])
+    all_expanded_cells = result.get('traversed_front_cells', [])
     
     # Determine status for title enhancement
     if success:
@@ -233,7 +221,6 @@ def _visualize_3d_cartographer(start_coords, end_coords, occupancy_grid, result,
     if not success:
         info_text += f'Error: {result.get("error", "Unknown error")}\n\n'
     info_text += f'Front cells: {len(traversed_front_cells)}\n'
-    info_text += f'Additional cells: {len(additional_expanded_cells)}\n'
     info_text += f'Total cells: {len(all_expanded_cells)}\n\n'
     info_text += f'START: ({start_coords[0]}, {start_coords[1]}, {start_coords[2]})\n'
     info_text += f'END: ({end_coords[0]}, {end_coords[1]}, {end_coords[2]})\n\n'
@@ -265,7 +252,6 @@ def _draw_3d_cartographer_view(ax, vis_start_coords, vis_end_coords, occupancy_g
     
     # Extract data from result
     traversed_front_cells = result.get('traversed_front_cells', [])
-    additional_expanded_cells = result.get('additional_expanded_cells', [])
     
     # Draw obstacles as semi-transparent cubes
     for z in range(depth):
@@ -280,11 +266,6 @@ def _draw_3d_cartographer_view(ax, vis_start_coords, vis_end_coords, occupancy_g
             x, y, z = int(cell_coords[0]), int(cell_coords[1]), int(cell_coords[2])
             _draw_cube(ax, x, y, z, color='lightblue', alpha=0.6)
     
-    # Draw additional expanded cells as light green cubes
-    if additional_expanded_cells:
-        for cell_coords in additional_expanded_cells:
-            x, y, z = int(cell_coords[0]), int(cell_coords[1]), int(cell_coords[2])
-            _draw_cube(ax, x, y, z, color='lightgreen', alpha=0.4)
     
     # Draw ray line from start to end
     ax.plot([vis_start_coords[0], vis_end_coords[0]], 
@@ -315,12 +296,10 @@ def _draw_3d_cartographer_view(ax, vis_start_coords, vis_end_coords, occupancy_g
     # Enhanced title with cartographer information
     success = result.get('success', False)
     front_count = len(traversed_front_cells)
-    additional_count = len(additional_expanded_cells)
-    
     if success:
-        title_suffix = f"SUCCESS | Front: {front_count}, Additional: {additional_count}"
+        title_suffix = f"SUCCESS | Front: {front_count}"
     else:
-        title_suffix = f"FAILED | Front: {front_count}, Additional: {additional_count}"
+        title_suffix = f"FAILED | Front: {front_count}"
     
     ax.set_title(f"{title}\n{title_suffix}", fontsize=12)
     ax.legend(fontsize=8)
@@ -358,7 +337,6 @@ def _draw_2d_cartographer_projection_view(ax, vis_start_coords, vis_end_coords, 
     
     # Extract data from result
     traversed_front_cells = result.get('traversed_front_cells', [])
-    additional_expanded_cells = result.get('additional_expanded_cells', [])
     
     # Determine projection parameters based on view type
     if view_type == 'xy':
@@ -396,20 +374,6 @@ def _draw_2d_cartographer_projection_view(ax, vis_start_coords, vis_end_coords, 
                                    facecolor='lightblue', alpha=0.6)
             ax.add_patch(rect)
     
-    # Draw additional expanded cells
-    if additional_expanded_cells:
-        for cell_coords in additional_expanded_cells:
-            if view_type == 'xy':
-                x, y = int(cell_coords[0]), int(cell_coords[1])
-            elif view_type == 'xz':
-                x, y = int(cell_coords[0]), int(cell_coords[2])
-            else:  # yz
-                x, y = int(cell_coords[1]), int(cell_coords[2])
-            
-            rect = patches.Rectangle((x, y), 1, 1, 
-                                   linewidth=1.5, edgecolor='green', 
-                                   facecolor='lightgreen', alpha=0.4)
-            ax.add_patch(rect)
     
     # Draw ray line
     if view_type == 'xy':
@@ -452,12 +416,10 @@ def _draw_2d_cartographer_projection_view(ax, vis_start_coords, vis_end_coords, 
     # Enhanced title with cartographer information for 2D projections
     success = result.get('success', False)
     front_count = len(traversed_front_cells)
-    additional_count = len(additional_expanded_cells)
-    
     if success:
-        title_suffix = f" | SUCCESS | F:{front_count} A:{additional_count}"
+        title_suffix = f" | SUCCESS | F:{front_count}"
     else:
-        title_suffix = f" | FAILED | F:{front_count} A:{additional_count}"
+        title_suffix = f" | FAILED | F:{front_count}"
     
     ax.set_title(f"{title}{title_suffix}", fontsize=10)
     
