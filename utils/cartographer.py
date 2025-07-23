@@ -1,9 +1,9 @@
 import sys
 import os
 import itertools
+import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils.grid import Grid
 from utils.raytracer import Raytracer
 
 class Cartographer():
@@ -11,27 +11,39 @@ class Cartographer():
         self.all_traversed_front_cells = set()  # Store front cells discovered by the raytracer (no duplicates)
 
         self.raytracer = Raytracer(dimensions, start_coords, end_coords)
-        # write lambda to return t/f of numpy array instead of using grid 
-        self.grid = Grid(occupancy_grid, loose=loose, origin=origin)
+
+        self.occupancy_grid = occupancy_grid
+        self.loose = loose
+        self.dimensions = dimensions
+        
+        # Set grid origin coordinates (defaults to zero origin)
+        if origin is None:
+            self.origin = np.zeros(self.dimensions, dtype=int)
+        else:
+            self.origin = np.array(origin, dtype=int)
+            if len(self.origin) != self.dimensions:
+                raise ValueError(f"origin must have {self.dimensions} coordinates, got {len(self.origin)}")
 
     def map(self):
         previous_cells = None  # Track previous front cells
         
         while not self.raytracer.reached():
-            # Get front cells at current position 
-            current_cells = set(tuple(cell) for cell in self.raytracer.front_cells())
-            
-            # Check if we have any front cells
+            # Get accessible front cells at current position
+            current_cells = set()
+            for cell in self.raytracer.front_cells():
+                cell_tuple = tuple(cell)
+                if self.is_accessible(cell_tuple):
+                    current_cells.add(cell_tuple)
+
+            # Check if we have any accessible front cells
             if not current_cells:
-                return self._handle_raytracing_failure("No front cells found.")
+                return self._handle_raytracing_failure("No accessible front cells found.")
             
-            # Check if next step is valid, if all cells are blocked or out of bounds, raytracing failed
-            if not self._has_accessible_cells(current_cells):
-                return self._handle_raytracing_failure("One or more front cells are inaccessible.")
-            
-            # Check reachability from the last set of front cells with looseness constraint
-            if previous_cells and not self._check_front_reachability(previous_cells, current_cells):
-                return self._handle_raytracing_failure("Current front is not reachable from the previous front.")
+            # Filter current cells to only include those reachable from the previous front
+            if previous_cells:
+                current_cells = self._get_reachable_front_cells(previous_cells, current_cells)
+                if not current_cells:
+                    return self._handle_raytracing_failure("Current front is not reachable from the previous front.")
 
             self.all_traversed_front_cells.update(current_cells)
             
@@ -45,19 +57,22 @@ class Cartographer():
         # Only process final cells if we haven't already reached the goal during the loop
         if not self.raytracer.reached():
             # Handle final cells at the goal position
-            final_cells = set(tuple(cell) for cell in self.raytracer.front_cells())
-            
+            # Handle final accessible cells at the goal position
+            final_cells = set()
+            for cell in self.raytracer.front_cells():
+                cell_tuple = tuple(cell)
+                if self.is_accessible(cell_tuple):
+                    final_cells.add(cell_tuple)
+
             # Check if we have any final cells
             if not final_cells:
-                return self._handle_raytracing_failure("No final front cells found.")
-            
-            # Check final cells accessibility
-            if not self._has_accessible_cells(final_cells):
-                return self._handle_raytracing_failure("One or more final front cells are inaccessible.")
+                return self._handle_raytracing_failure("No accessible final front cells found.")
 
             # Check reachability from the last set of front cells
-            if previous_cells and not self._check_front_reachability(previous_cells, final_cells):
-                return self._handle_raytracing_failure("Final front is not reachable from the previous front.")
+            if previous_cells:
+                final_cells = self._get_reachable_front_cells(previous_cells, final_cells)
+                if not final_cells:
+                    return self._handle_raytracing_failure("Final front is not reachable from the previous front.")
             
             self.all_traversed_front_cells.update(final_cells)
         
@@ -73,12 +88,6 @@ class Cartographer():
             }
         }    
     
-    def _has_accessible_cells(self, cells):
-        for cell in cells:
-            if self.grid.is_within_grid_bounds(cell) and not self.grid.is_cell_occupied(cell):
-                return True
-        return False
-    
     def _handle_raytracing_failure(self, error_message):
         return {
             'success': False,
@@ -91,10 +100,11 @@ class Cartographer():
             }
         }
 
-    def _check_front_reachability(self, previous_cells, current_cells):
+    def _get_reachable_front_cells(self, previous_cells, current_cells):
         """
-        Checks if any cell in current_cells is reachable from any cell in previous_cells
-        using BFS within the combined bounding box.
+        Finds all cells in current_cells that are reachable from any cell in previous_cells
+        using BFS within the combined bounding box. The path cannot go through other
+        current_cells, only through accessible cells.
         """
         # Bounding box for the search
         dimensions = self.raytracer.dimensions
@@ -105,27 +115,40 @@ class Cartographer():
         # BFS implementation
         queue = list(previous_cells)
         visited = set(previous_cells)
+        reachable_current_cells = set()
 
         while queue:
             cell = queue.pop(0)
 
-            if cell in current_cells:
-                return True  # Reachability confirmed
-
             # Get neighbors based on 'loose' and bounding box
             for neighbor in self._get_neighbors(cell, min_coords, max_coords):
                 if neighbor not in visited:
-                    visited.add(neighbor)
-                    # Path can only go through accessible cells (or the target cells)
-                    if neighbor in current_cells or (self.grid.is_within_grid_bounds(neighbor) and not self.grid.is_cell_occupied(neighbor)):
+                    if neighbor in current_cells:
+                        visited.add(neighbor)
+                        reachable_current_cells.add(neighbor)
                         queue.append(neighbor)
-        
-        return False # No path found
 
+                    elif self.is_accessible(neighbor):
+                        visited.add(neighbor)
+                        queue.append(neighbor)
+        print(f"Reachable current cells: {reachable_current_cells} from previous cells: {previous_cells}")
+        return reachable_current_cells
+    
+    def is_accessible(self, cell_coords):
+        # Convert world coordinates to grid indices by subtracting the origin
+        indices = np.array(cell_coords, dtype=int) - self.origin
+
+        # Grid shape is typically (z, y, x), so we reverse it for (x, y, z) checks
+        grid_shape_rev = self.occupancy_grid.shape[::-1]
+
+        # Check if indices are within the grid boundaries
+        if not all(0 <= idx < size for idx, size in zip(indices, grid_shape_rev)):
+            return False
+
+        # Check the occupancy status of the cell and return true if not occupied
+        return self.occupancy_grid[tuple(indices[::-1])] == 0
+    
     def _get_neighbors(self, cell, min_coords, max_coords):
-        """
-        Get valid neighboring cells based on 'loose' connectivity and a bounding box.
-        """
         neighbors = []
         dimensions = len(cell)
 
@@ -136,10 +159,9 @@ class Cartographer():
 
             # Check if the number of changing dimensions is within the 'loose' limit
             num_changed_dims = sum(1 for d in displacement if d != 0)
-            if num_changed_dims > self.grid.loose:
+            if num_changed_dims > self.loose:
                 continue
 
-            # Use numpy instead of tuple
             neighbor = tuple(cell[i] + displacement[i] for i in range(dimensions))
 
             # Check if neighbor is within the search's bounding box
