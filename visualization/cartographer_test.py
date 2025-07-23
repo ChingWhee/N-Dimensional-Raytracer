@@ -49,26 +49,6 @@ def create_2d_test_grids():
         2, [2.0, 0.0], [2.0, 2.6], grid_2d_12, None, 2, "3x3 2 loose"
     ])
 
-    # test_cases.append([
-    #     2, [0.3, 0.3], [2.6, 1.6], grid_2d_11, None, 1, "3x3 no obstacles 2"
-    # ])
-
-    # test_cases.append([
-    #     2, [1.5, 0.5], [2.5, 1.5], grid_2d_12, None, 1, "3x3 obstacles (not blocked)"
-    # ])
-
-    # test_cases.append([
-    #     2, [0.0, 0.0], [2.0, 3.0], grid_2d_12, None, 1, "3x3 obstacles (blocked)"
-    # ])
-
-    # test_cases.append([
-    #     2, [2.0, 0.0], [2.0, 3.0], grid_2d_12, None, 1, "3x3 obstacles (straight)"
-    # ])
-
-    # test_cases.append([
-    #     2, [2.0, 0.0], [2.0, 3.0], grid_2d_13, None, 1, "3x3 obstacles (straight & blocked)"
-    # ])
-    
     return test_cases
 
 def create_3d_test_grids():
@@ -82,6 +62,18 @@ def create_3d_test_grids():
          [1, 0]],
     ], dtype=bool)
 
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_01, None, 1, "3D obstacle 1 loose"
+    ])
+
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_01, None, 2, "3D obstacle 2 loose"
+    ])
+
+    test_cases.append([
+        3, [0.0, 0.0, 0.0], [2.0, 1.6, 1.8], grid_3d_01, None, 3, "3D obstacle (blocked)"
+    ])
+
     grid_3d_02 = np.array([
         [[0, 1],
          [1, 1]],
@@ -91,29 +83,16 @@ def create_3d_test_grids():
     ], dtype=bool)
 
     test_cases.append([
-        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_01, None, 1, "3D obstacle (not blocked)"
+        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_02, None, 1, "3D obstacle 1 loose"
     ])
 
     test_cases.append([
-        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_01, None, 2, "3D obstacle (not blocked)"
+        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_02, None, 2, "3D obstacle 2 loose"
     ])
 
     test_cases.append([
-        3, [0.0, 0.0, 0.0], [2.0, 1.6, 1.8], grid_3d_01, None, 3, "3D obstacle (blocked)"
+        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_02, None, 3, "3D obstacle 3 loose"
     ])
-
-    test_cases.append([
-        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_02, None, 1, "3D obstacle (not blocked)"
-    ])
-
-    test_cases.append([
-        3, [0.0, 0.0, 0.0], [2.0, 2.0, 2.0], grid_3d_02, None, 2, "3D obstacle (not blocked)"
-    ])
-
-    test_cases.append([
-        3, [0.0, 0.0, 0.0], [2.0, 1.6, 1.8], grid_3d_02, None, 3, "3D obstacle (blocked)"
-    ])
-
 
     grid_3d_11 = np.array([       
         [[0, 0, 0, 1, 0],
@@ -124,18 +103,24 @@ def create_3d_test_grids():
     ], dtype=bool)
 
     test_cases.append([
-        3, [1.0, 1.0, 0.0], [5.0, 2.0, 2.0], grid_3d_11, None, 1, "3D obstacle (allowed)"
+        3, [0.0, 1.0, 1.0], [5.0, 1.0, 1.0], grid_3d_11, None, 1, "3D obstacle 1 loose"
     ])
 
+    test_cases.append([
+        3, [0.0, 1.0, 1.0], [5.0, 1.0, 1.0], grid_3d_11, None, 2, "3D obstacle 2 loose"
+    ])
 
+    test_cases.append([
+        3, [0.0, 1.0, 1.0], [5.0, 1.0, 1.0], grid_3d_11, None, 3, "3D obstacle 3 loose"
+    ])
 
     return test_cases
 
 def create_test_grids():
-    """Create all test grids for cartographer visualization (combines 2D and 3D)."""
+    """Create all test grids for cartographer visualization."""
     test_cases = []
     test_cases.extend(create_2d_test_grids())
-    # test_cases.extend(create_3d_test_grids())
+    test_cases.extend(create_3d_test_grids())
     return test_cases
 
 def test_cartographer_viz():
